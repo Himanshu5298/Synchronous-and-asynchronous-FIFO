@@ -1,0 +1,271 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Synchronous FIFO   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////      	FIFO       /////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    
+// Design Name: 
+// Module Name:    FIFO_syn 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////        FIFO synchronous                /////////////////////////////////////////////
+
+module FIFO_syn(clock, reset, buf_in,buf_out,wr_en,rd_en,buf_empty,buf_full,fifo_counter);
+  
+input clock, reset, buf_in,wr_en,rd_en; //single clock "clock" for both read and write opertaions
+output buf_out, buf_empty,buf_full, fifo_counter;
+wire [1:0] buf_in;                       // 2 bit input/write data for the FIFO cells
+reg [5:0] rd_ptr;                        //  Read pointer for reading the data from FIFO address
+reg [5:0] wr_ptr;                        //  Write pointer for writing the data into FIFO address
+reg [6:0] fifo_counter;                  // for counting the full cells out of 64 cells in the FIFO
+reg buf_empty, buf_full;                 // empty anf full flags
+reg [5:0] buf_memory[63:0];              // 64 memory locations of the FIFO
+reg [1:0] buf_out;                       // 2 bit output/read data from FIFO
+
+
+////////////////////////////////////////////          status flags(empty and full)     //////////////////////////////
+
+always @(fifo_counter)
+begin
+if(fifo_counter==0) begin                            // fifo is empty
+buf_empty<=1; 
+buf_full<=0; end
+else if(fifo_counter==64) begin                       //fifo is full
+buf_empty<=0;
+buf_full<=1;  end 
+else begin                                            // fifo is neither full nor empty
+buf_empty<=0;
+buf_full<=0;
+end
+end
+
+ 
+////////////////////////////////////                  setting the fifo counter               //////////////////////
+
+always @(posedge clock or posedge reset)   
+begin
+if(reset)                                            // if reset is given high then counter will reset to 0
+fifo_counter<=0;
+else if((!buf_empty && rd_en)&&(!buf_full && wr_en)) // read and write operation at same time will lead to no change in fifo counter value
+fifo_counter<=fifo_counter; 
+else if(!buf_full && wr_en)                          // one cell data of fifo will be written hence that particular cell will be full
+fifo_counter<=fifo_counter+1;
+else if(!buf_empty && rd_en)                         // one cell data of fifo will be read hence that particular cell will be empty
+fifo_counter<=fifo_counter-1;
+else                                                 // for any other condition fifo counter will not change
+fifo_counter<=fifo_counter;
+end
+
+
+////////////////////////////                   reading the data from fifo         ///////////////////////////
+
+always @(posedge clock or posedge reset)
+
+if(reset)                                             // if the fifo is in reset mode then fifo will have no data left hence output will be 0.
+buf_out<=2'bxx;
+
+else
+begin
+
+if(!buf_empty && rd_en)                              // it will provide the data of cell which will be pointed by read pointer.
+buf_out<=buf_memory[rd_ptr];
+
+else                                                 // xx output to show that no data is getting out at this condition
+buf_out<=2'bxx;
+end
+
+
+///////////////////////////////                writing the data into fifo        //////////////////////////////
+
+always @(posedge clock)                              //writting data in fifo even in reset mode will have no problem
+begin
+
+if (!buf_full && wr_en)                             // it will write the data in cell which will be pointed by write pointer.
+buf_memory[wr_ptr]<=buf_in;
+
+else                                                // xx input to show that not data is getting loaded into the FIFO
+buf_memory[wr_ptr]<=2'bxx;
+end
+
+
+////////////////////////////////                  to manage the pointers         /////////////////////////////////
+
+always @(posedge clock or posedge reset)
+begin
+if(reset)                                         //both pointers will be present at 0 location in case of reset high
+begin
+rd_ptr<=0;
+wr_ptr<=0;
+end
+
+else if ((!buf_empty && rd_en)&&(!buf_full && wr_en)) // both read and write pointer will move up in case of simultaneous read and write operation
+begin
+rd_ptr<=rd_ptr+1;
+wr_ptr<=wr_ptr+1;
+end
+
+else
+begin
+if (!buf_full && wr_en)                            // write pointer will move up after write operation in fifo
+begin
+rd_ptr<=rd_ptr;
+wr_ptr<=wr_ptr+1;
+end
+
+else if (!buf_empty && rd_en)                      // read pointer will move up after read operation fifo
+begin 
+rd_ptr<=rd_ptr+1;
+wr_ptr<=wr_ptr;
+end
+end
+end
+
+endmodule
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  Asynchronous FIFO   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////      	FIFO       /////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date:    
+// Design Name: 
+// Module Name:    FIFO_syn 
+// Project Name: 
+// Target Devices: 
+// Tool versions: 
+// Description: 
+//
+// Dependencies: 
+//
+// Revision: 
+// Revision 0.01 - File Created
+// Additional Comments: 
+//
+//////////////////////////////////////////////        FIFO synchronous                /////////////////////////////////////////////
+
+module FIFO_syn(clock, reset, buf_in,buf_out,wr_en,rd_en,buf_empty,buf_full,fifo_counter);
+  
+input clock, reset, buf_in,wr_en,rd_en; //single clock "clock" for both read and write opertaions
+output buf_out, buf_empty,buf_full, fifo_counter;
+wire [1:0] buf_in;                       // 2 bit input/write data for the FIFO cells
+reg [5:0] rd_ptr;                        //  Read pointer for reading the data from FIFO address
+reg [5:0] wr_ptr;                        //  Write pointer for writing the data into FIFO address
+reg [6:0] fifo_counter;                  // for counting the full cells out of 64 cells in the FIFO
+reg buf_empty, buf_full;                 // empty anf full flags
+reg [5:0] buf_memory[63:0];              // 64 memory locations of the FIFO
+reg [1:0] buf_out;                       // 2 bit output/read data from FIFO
+
+
+////////////////////////////////////////////          status flags(empty and full)     //////////////////////////////
+
+always @(fifo_counter)
+begin
+if(fifo_counter==0) begin                            // fifo is empty
+buf_empty<=1; 
+buf_full<=0; end
+else if(fifo_counter==64) begin                       //fifo is full
+buf_empty<=0;
+buf_full<=1;  end 
+else begin                                            // fifo is neither full nor empty
+buf_empty<=0;
+buf_full<=0;
+end
+end
+
+ 
+////////////////////////////////////                  setting the fifo counter               //////////////////////
+
+always @(posedge clock or posedge reset)   
+begin
+if(reset)                                            // if reset is given high then counter will reset to 0
+fifo_counter<=0;
+else if((!buf_empty && rd_en)&&(!buf_full && wr_en)) // read and write operation at same time will lead to no change in fifo counter value
+fifo_counter<=fifo_counter; 
+else if(!buf_full && wr_en)                          // one cell data of fifo will be written hence that particular cell will be full
+fifo_counter<=fifo_counter+1;
+else if(!buf_empty && rd_en)                         // one cell data of fifo will be read hence that particular cell will be empty
+fifo_counter<=fifo_counter-1;
+else                                                 // for any other condition fifo counter will not change
+fifo_counter<=fifo_counter;
+end
+
+
+////////////////////////////                   reading the data from fifo         ///////////////////////////
+
+always @(posedge clock or posedge reset)
+
+if(reset)                                             // if the fifo is in reset mode then fifo will have no data left hence output will be 0.
+buf_out<=2'bxx;
+
+else
+begin
+
+if(!buf_empty && rd_en)                              // it will provide the data of cell which will be pointed by read pointer.
+buf_out<=buf_memory[rd_ptr];
+
+else                                                 // xx output to show that no data is getting out at this condition
+buf_out<=2'bxx;
+end
+
+
+///////////////////////////////                writing the data into fifo        //////////////////////////////
+
+always @(posedge clock)                              //writting data in fifo even in reset mode will have no problem
+begin
+
+if (!buf_full && wr_en)                             // it will write the data in cell which will be pointed by write pointer.
+buf_memory[wr_ptr]<=buf_in;
+
+else                                                // xx input to show that not data is getting loaded into the FIFO
+buf_memory[wr_ptr]<=2'bxx;
+end
+
+
+////////////////////////////////                  to manage the pointers         /////////////////////////////////
+
+always @(posedge clock or posedge reset)
+begin
+if(reset)                                         //both pointers will be present at 0 location in case of reset high
+begin
+rd_ptr<=0;
+wr_ptr<=0;
+end
+
+else if ((!buf_empty && rd_en)&&(!buf_full && wr_en)) // both read and write pointer will move up in case of simultaneous read and write operation
+begin
+rd_ptr<=rd_ptr+1;
+wr_ptr<=wr_ptr+1;
+end
+
+else
+begin
+if (!buf_full && wr_en)                            // write pointer will move up after write operation in fifo
+begin
+rd_ptr<=rd_ptr;
+wr_ptr<=wr_ptr+1;
+end
+
+else if (!buf_empty && rd_en)                      // read pointer will move up after read operation fifo
+begin 
+rd_ptr<=rd_ptr+1;
+wr_ptr<=wr_ptr;
+end
+end
+end
+
+endmodule
+
