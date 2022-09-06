@@ -1,0 +1,345 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       Asynchronous test bench    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`timescale 1ns / 1ps
+
+////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer:
+//
+// Create Date:   05:46:18 08/22/2022
+// Design Name:   FIFO_asyn
+// Module Name:   /home/ise/FIFO/FIFO_asyn_out.v
+// Project Name:  FIFO
+// Target Device:  
+// Tool versions:  
+// Description: 
+//
+// Verilog Test Fixture created by ISE for module: FIFO_asyn
+//
+// Dependencies:
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+////////////////////////////////////////////////////////////////////////////////
+
+module FIFO_asyn_out;
+
+	// Inputs
+	reg w_clock;
+	reg r_clock;
+	reg reset;
+	reg [1:0] buf_in;
+	reg wr_en;
+	reg rd_en;
+
+	// Outputs
+	wire [1:0] buf_out;
+	wire buf_empty;
+	wire buf_full;
+	wire [6:0] fifo_counter;
+
+	// Instantiate the Unit Under Test (UUT)
+	FIFO_asyn uut (
+		.w_clock(w_clock), 
+		.r_clock(r_clock), 
+		.reset(reset), 
+		.buf_in(buf_in), 
+		.buf_out(buf_out), 
+		.wr_en(wr_en), 
+		.rd_en(rd_en), 
+		.buf_empty(buf_empty), 
+		.buf_full(buf_full), 
+		.fifo_counter(fifo_counter)
+	);
+
+initial    // Initialize w_clock cycle
+begin
+r_clock<=1'b0;
+repeat(300) begin
+#30 r_clock<=~r_clock;
+end
+end
+  
+initial    // Initialize r_clock cycle
+begin
+w_clock<=1'b0;
+repeat(170) begin
+#41 w_clock<=~w_clock; end
+end
+
+initial 
+begin 
+		
+		$monitor($time,"  buf_in=%2b,   wr_en=%b,   rd_en=%b,   buf_out=%2b ",buf_in,wr_en,rd_en,buf_out);
+	   //it will show the time scale
+		reset =1;
+		
+		#20
+		reset = 0;
+		buf_in = 10;
+		wr_en = 1;
+		rd_en = 0;
+
+		
+		#50;
+		reset = 0;
+		buf_in = 11;
+		wr_en = 1;
+		rd_en = 0;
+		
+      #50;
+		reset = 0;
+		buf_in = 2'bxx;  //in case of active low of read enable I am not giving input
+		wr_en = 0;
+		rd_en = 1;
+		
+		 #50;
+		reset = 0;
+		buf_in = 00;
+		wr_en = 1;
+		rd_en = 0;
+		
+		 #50;
+		reset = 0;
+		buf_in = 11;
+		wr_en = 1;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 01;
+		wr_en = 1;
+		rd_en = 0;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		buf_in =01;
+		wr_en = 1;
+		rd_en = 0;
+		repeat (113) begin  //I am repeating the input 50 times to see the fifo_counter values
+		#50 buf_in[1]=~buf_in[1]; end
+		
+		
+		#50;
+		buf_in =11;
+		wr_en = 1;
+		rd_en = 0;
+		
+		#50;
+		buf_in =2'bxx;
+		wr_en = 1;
+		rd_en = 0;
+		
+		#50;
+		buf_in =2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		
+		//$stop;
+	end
+      
+endmodule
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   Synchronous test bench   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+`timescale 1ns / 1ps
+
+////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer:
+//
+// Create Date:   13:56:01 08/18/2022
+// Design Name:   FIFO_syn
+// Module Name:   /home/ise/FIFO/FIFO_syn_out.v
+// Project Name:  FIFO
+// Target Device:  
+// Tool versions:  
+// Description: 
+//
+// Verilog Test Fixture created by ISE for module: FIFO_syn
+//
+// Dependencies:
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+////////////////////////////////////////////////////////////////////////////////
+module FIFO_syn_out;
+
+	// Inputs
+	reg clock;
+	reg reset;
+	reg [1:0] buf_in;
+	reg wr_en;
+	reg rd_en;
+
+	// Outputs
+	wire [1:0] buf_out;
+	wire buf_empty;
+	wire buf_full;
+	wire [6:0] fifo_counter;
+
+	// Instantiate the Unit Under Test (UUT)
+	FIFO_syn uut (
+		.clock(clock), 
+		.reset(reset), 
+		.buf_in(buf_in), 
+		.buf_out(buf_out), 
+		.wr_en(wr_en), 
+		.rd_en(rd_en), 
+		.buf_empty(buf_empty), 
+		.buf_full(buf_full), 
+		.fifo_counter(fifo_counter)
+	);
+
+initial    // Initialize clock cycle
+begin
+clock=1'b0;
+repeat(160) begin
+#25 clock=~clock; end
+end
+
+
+	initial begin  // Initialize Inputs
+		$monitor($time,"  buf_in=%2b,   wr_en=%b,   rd_en=%b,   buf_out=%2b ",buf_in,wr_en,rd_en,buf_out);
+	   //it will show the time scale
+		
+		reset =1;
+		
+		#25
+		reset = 0;
+		buf_in = 10;
+		wr_en = 1;
+		rd_en = 0;
+
+		
+		#50;
+		reset = 0;
+		buf_in = 11;
+		wr_en = 1;
+		rd_en = 0;
+		
+      #50;
+		reset = 0;
+		buf_in = 2'bxx;  //in case of active low of read enable I am not giving input
+		wr_en = 0;
+		rd_en = 1;
+		
+		 #50;
+		reset = 0;
+		buf_in = 00;
+		wr_en = 1;
+		rd_en = 0;
+		
+		 #50;
+		reset = 0;
+		buf_in = 11;
+		wr_en = 1;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 01;
+		wr_en = 1;
+		rd_en = 0;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		reset = 0;
+		buf_in = 2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		#50;
+		buf_in =01;
+		wr_en = 1;
+		rd_en = 0;
+		repeat (63) begin  //I am repeating the input 50 times to see the fifo_counter values
+		#50 buf_in[1]=~buf_in[1]; end
+		
+		
+		#50;
+		buf_in =11;
+		wr_en = 1;
+		rd_en = 10;
+		
+		#50;
+		buf_in =2'bxx;
+		wr_en = 1;
+		rd_en = 0;
+		
+		#50;
+		buf_in =2'bxx;
+		wr_en = 0;
+		rd_en = 1;
+		
+		// #50 $stop;
+	end
+     
+endmodule
+/////////////////////////////////////          the simulatiom output is                      ///////////////////////
+
+                  //    0  buf_in= xx,   wr_en=x,    rd_en=x,   buf_out= 00 
+                 //     25  buf_in= 10,   wr_en=1,   rd_en=0,   buf_out= 00 
+                  //    75  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 00 
+                 //    125  buf_in= xx,   wr_en=0,   rd_en=1,   buf_out= 10 
+                  //   175  buf_in= 00,   wr_en=1,   rd_en=0,   buf_out= 10 
+                  //   225  buf_in= 11,   wr_en=1,   rd_en=1,   buf_out= 11 
+                  //   275  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                   //  325  buf_in= xx,   wr_en=0,   rd_en=1,   buf_out= 11 
+                   //  375  buf_in= xx,   wr_en=0,   rd_en=1,   buf_out= 00 
+                   //  425  buf_in= xx,   wr_en=0,   rd_en=1,   buf_out= 11 
+                   //  525  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                   //  575  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   625  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                   //  675  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   725  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   775  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   825  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   875  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 11 
+                  //   925  buf_in= 01,   wr_en=1,   rd_en=0,   buf_out= 11 
+                 //    975  buf_in= 11,   wr_en=1,   rd_en=0,   buf_out= 11 
