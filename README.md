@@ -13,6 +13,6 @@ NOTE: <br>
 (1) Never write into full FIFO <bR>
 (2) Never read from empty FIFO
 
-#Asynchronous FIFO memory
+# Asynchronous FIFO memory
 It is a kind of junction between two same clocked module so that the smooth transfer of data can happen between them. The read and write operation of data will happen
 at different clock frequencies here.
