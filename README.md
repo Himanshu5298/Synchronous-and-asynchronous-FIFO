@@ -1,7 +1,7 @@
-# Synchronous and Asynchronous FIFO
-Synchronous FIFO design <br>
+# Synchronous FIFO memory
+
 Understanding of buffer is such that when data come at the receiving module at a fast rate but are processed slowly or irregularly by the another module, intermediate storage, also known as buffering, is always required.
-It is a kind of junction between two differentely clocked module so that the smooth transfer of data can happen between them.
+It is a kind of junction between two same clocked module so that the smooth transfer of data can happen between them.
 FIFO is a special type of buffer. 
 <br>
 The name "FIFO" stands for First In First Out. Here we are going to form a circular FIFO and discuss its operations.
@@ -12,3 +12,7 @@ The write pointer contains the memory address of the incoming data.The read poin
 NOTE: <br>
 (1) Never write into full FIFO <bR>
 (2) Never read from empty FIFO
+
+#Asynchronous FIFO memory
+It is a kind of junction between two same clocked module so that the smooth transfer of data can happen between them. The read and write operation of data will happen
+at different clock frequencies here.
